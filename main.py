@@ -1,26 +1,40 @@
+import json
 import sys
 from flask import Flask, jsonify, request
 import pymongo
+import MongoManagment
 
 if __name__ == "__main__":
-    # connection_url = f'mongodb+srv://els_admin:{sys.argv[1]}@els.r9xuzuv.mongodb.net/test'
-    # client = pymongo.MongoClient(connection_url)
-    # collection = client.els_db.els_db
-
-    # get all users
-    # users = collection.find_one({"username": "omerap12"})
-    # print(users["username"])
-    users = [{"username": "omerap12", "password": "1234Aa"}, {"username": "avitalos", "password": "98876A"}]
+    mongo_db = MongoManagment.Mongo()
     app = Flask(__name__)
-    @app.route('/sign_in', methods=['GET'])
+
+    @app.route('/sign_in', methods=['POST'])
     def sign_in():
-        # get username and password from UI - now its hard-coded
-        username = "avitalos"
-        password = "98876A"
-        for user in users:
-            if user["username"] == username and user["password"] == password:
-                return 'ok', 200
-        return 'not found', 404
+        try:
+            data = request.json
+            username = data["username"]
+            password = data["password"]
+            if mongo_db.check_username_password(username, password):
+                return json.dumps({'success': True}), 200, {'ContentType': 'application/json'}
+            else:
+                return json.dumps({'success': True}), 400, {'ContentType': 'application/json'}
+        except:
+            return json.dumps({'success': False}), 500, {'ContentType': 'application/json'}
+
+    @app.route('/sign_up', methods=['POST'])
+    def sign_up():
+        try:
+            data = request.json
+            username = data["username"]
+            password = data["password"]
+            if mongo_db.add_user(username, password):
+                # returns 200 if username is not exists and created successfully new user in DB.
+                return json.dumps({'success': True}), 200, {'ContentType': 'application/json'}
+            else:
+                # returns 400 if username is already exists
+                return json.dumps({'success': True}), 400, {'ContentType': 'application/json'}
+        except:
+            return json.dumps({'success': False}), 500, {'ContentType': 'application/json'}
 
     app.run()
 
