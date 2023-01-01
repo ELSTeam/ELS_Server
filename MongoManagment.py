@@ -27,7 +27,7 @@ class Mongo:
     def add_user(self, user_name: str, password: str) -> bool:
         """
         Function adds new user, first checking if username already in db, if not it adds him to the db.
-        :param user_name: user name string of the new user
+        :param user_name: username string of the new user
         :param password: password string of the new user
         :return: True if user added else false
         """
@@ -43,7 +43,22 @@ class Mongo:
         }
         self.collection.insert_one(userDocument)
 
+    def check_username_password(self, username: str, password: str) -> bool:
+        """
+        Function checks if username and password are matching in the db.
+        :param username: username string of the user
+        :param password: password string of the user
+        :return: True if valid else false
+        """
+        user = self.find_user(username)
+        if not user:
+            return False
+        return user["password"] == password
+
+
 
 # mongo = Mongo()
 # print(mongo.find_user("omerap12"))
 # mongo.add_user("test", "testme")
+# print(mongo.check_username_password("omerap12", "Aa123456!"))  # return True
+# print(mongo.check_username_password("omerap12", "false"))  # return False
