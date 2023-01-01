@@ -42,7 +42,7 @@ class Mongo:
             "historyOfFalls": []
         }
         self.collection.insert_one(userDocument)
-
+        
     def check_username_password(self, username: str, password: str) -> bool:
         """
         Function checks if username and password are matching in the db.
@@ -54,8 +54,6 @@ class Mongo:
         if not user:
             return False
         return user["password"] == password
-
-
 
 # mongo = Mongo()
 # print(mongo.find_user("omerap12"))
