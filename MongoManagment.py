@@ -43,7 +43,7 @@ class Mongo:
         }
         self.collection.insert_one(userDocument)
         return True
-        
+
     def check_username_password(self, username: str, password: str) -> bool:
         """
         Function checks if username and password are matching in the db.
@@ -55,6 +55,15 @@ class Mongo:
         if not user:
             return False
         return user["password"] == password
+
+    def delete_user(self, username: str, password: str) -> None:
+        """
+        Function delete user. by checking the password and username
+        :param username: username of the user
+        :param password: password of the user
+        """
+        query = {"username": username, "password": password}
+        self.collection.delete_one(query)
 
 # mongo = Mongo()
 # print(mongo.find_user("omerap12"))
