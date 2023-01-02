@@ -68,7 +68,7 @@ class Mongo:
             return False
         self.collection.update_one(
             {"username": username},
-            {"$push": {"contacts": contact_info}}, upsert = True)
+            {"$push": {"contacts": contact_info}}, upsert=True)
         return True
 
     def delete_user(self, username: str, password: str) -> None:
@@ -80,8 +80,18 @@ class Mongo:
         query = {"username": username, "password": password}
         self.collection.delete_one(query)
 
+    def get_all_contacts(self, username: str) -> list:
+        """
+        Function returns all contacts of the username
+        :param username: username of the user
+        :return list: list of json objects that represents the username contacts - returns empty list if user not exists
+        """
+        user = self.collection.find_one({"username": username})
+        if not user:
+            return []
+        else:
+            return user["contacts"]
 
-# mongo = Mongo()
 # print(mongo.find_user("omerap12"))
 # mongo.add_user("test", "testme")
 # print(mongo.check_username_password("omerap12", "Aa123456!"))  # return True
