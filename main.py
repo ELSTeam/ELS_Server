@@ -75,6 +75,24 @@ if __name__ == "__main__":
             # returns 500 if error is internal
             return json.dumps({'success': False}), 500, {'ContentType': 'application/json'}
 
-    app.run()
 
+    @app.route('/all_contacts', methods=['GET'])
+    def get_all_contacts():
+        try:
+            data = request.json
+            username = data["username"]
+            contacts_json = mongo_db.get_all_contacts(username)
+            if not contacts_json:
+                # returns 400 if list of contacts is empty -> user not found.
+                return json.dumps({'success': False}), 400, {'ContentType': 'application/json'}
+            else:
+                # returns 200 if user has list of contacts and returns list of json objects.
+                return json.dumps({'contacts': contacts_json}), 200, {'ContentType': 'application/json'}
+        except Exception as e:
+            print(e)
+            # returns 500 if error is internal
+            return json.dumps({'success': False}), 500, {'ContentType': 'application/json'}
+
+
+    app.run()
 
