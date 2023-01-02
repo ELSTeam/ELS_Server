@@ -42,6 +42,11 @@ if __name__ == "__main__":
             # returns 500 if error is internal
             return json.dumps({'success': False}), 500, {'ContentType': 'application/json'}
 
+    @app.route('/add_contact', methods=['PUT'])
+    def add_contact():
+        pass
+
+
     app.run()
 
 
