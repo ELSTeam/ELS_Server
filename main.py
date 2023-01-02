@@ -42,6 +42,7 @@ if __name__ == "__main__":
             # returns 500 if error is internal
             return json.dumps({'success': False}), 500, {'ContentType': 'application/json'}
 
+
     @app.route('/delete', methods=['PUT'])
     def delete():
         try:
@@ -53,6 +54,7 @@ if __name__ == "__main__":
         except Exception as e:
             print(e)
             return json.dumps({'success': False}), 500, {'ContentType': 'application/json'}
+
 
     @app.route('/add_contact', methods=['PUT'])
     def add_contact():
