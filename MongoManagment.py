@@ -85,6 +85,7 @@ class Mongo:
         query = {"username": username, "password": password}
         self.collection.delete_one(query)
 
+
 # mongo = Mongo()
 # print(mongo.find_user("omerap12"))
 # mongo.add_user("test", "testme")
