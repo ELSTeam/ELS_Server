@@ -42,6 +42,7 @@ class Mongo:
             "historyOfFalls": []
         }
         self.collection.insert_one(userDocument)
+        return True
         
     def check_username_password(self, username: str, password: str) -> bool:
         """

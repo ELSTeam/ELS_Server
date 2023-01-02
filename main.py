@@ -15,10 +15,14 @@ if __name__ == "__main__":
             username = data["username"]
             password = data["password"]
             if mongo_db.check_username_password(username, password):
+                # returns 200 if username and password are correct
                 return json.dumps({'success': True}), 200, {'ContentType': 'application/json'}
             else:
+                # returns 400 if username or password is incorrect or username is exists
                 return json.dumps({'success': True}), 400, {'ContentType': 'application/json'}
-        except:
+        except Exception as e:
+            print(e)
+            # returns 500 if error is internal
             return json.dumps({'success': False}), 500, {'ContentType': 'application/json'}
 
     @app.route('/sign_up', methods=['POST'])
@@ -33,7 +37,9 @@ if __name__ == "__main__":
             else:
                 # returns 400 if username is already exists
                 return json.dumps({'success': True}), 400, {'ContentType': 'application/json'}
-        except:
+        except Exception as e:
+            print(e)
+            # returns 500 if error is internal
             return json.dumps({'success': False}), 500, {'ContentType': 'application/json'}
 
     app.run()
