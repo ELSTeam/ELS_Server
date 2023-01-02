@@ -56,25 +56,20 @@ class Mongo:
             return False
         return user["password"] == password
 
-
-    def add_new_contact_to_username(self, username: str, contact_name: str, phone: str, mail: str) -> bool:
+    def add_new_contact_to_username(self, username: str, contact_info) -> bool:
         """
         Function first check if username exists, and add contact to current username.
+        :param contact_info: json that contains contact_name, phone. mail.
         :param username: username string of the user
-        :param contact_name: password string of the user
-        :param phone: password string of the user
-        :param mail: password string of the user
         :return: True if added successfully, or False if not succeeded
         """
         user = self.find_user(username)
         if not user:
             return False
-        contact_info = {"name": contact_name, "phone": phone, "email": mail}
         self.collection.update_one(
             {"username": username},
             {"$push": {"contacts": contact_info}}, upsert = True)
         return True
-
 
     def delete_user(self, username: str, password: str) -> None:
         """
