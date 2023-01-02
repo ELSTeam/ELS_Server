@@ -53,7 +53,7 @@ def delete_user(url):
     """
     payload = {"username": "test_user", "password": "test_password"}
     headers = {'Content-Type': 'application/json'}
-    res = requests.post(url, json=payload, headers=headers)
+    res = requests.delete(url, json=payload, headers=headers)
     assert res.status_code == 200
 
 
