@@ -43,7 +43,7 @@ if __name__ == "__main__":
             return json.dumps({'success': False}), 500, {'ContentType': 'application/json'}
 
 
-    @app.route('/delete', methods=['PUT'])
+    @app.route('/delete', methods=['DELETE'])
     def delete():
         try:
             data = request.json
