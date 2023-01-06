@@ -13,8 +13,7 @@ permissions:
   contents: read
 
 jobs:
-  build:
-
+  Tests_on_Flask_server:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
