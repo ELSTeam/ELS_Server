@@ -14,7 +14,6 @@ permissions:
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
@@ -30,14 +29,16 @@ jobs:
         pip install requests
         pip install pymongo
         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
-    - name: Run server
+  run_server:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Start the server
       run: |
-        # stop the build if there are Python syntax errors or undefined names
         python3 main.py CtOnqgBWZfqmglpj &
-        # flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
-        # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
-        # flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
-    - name: Test with pytest
+  Testing:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Running Tests
       run: |
         cd tests/
         python3 server_tests.py http://127.0.0.1:5000
