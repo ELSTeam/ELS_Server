@@ -94,5 +94,4 @@ if __name__ == "__main__":
             return json.dumps({'success': False}), 500, {'ContentType': 'application/json'}
 
 
-    app.run()
-
+    app.run(port=5000, debug=True, host='0.0.0.0')
