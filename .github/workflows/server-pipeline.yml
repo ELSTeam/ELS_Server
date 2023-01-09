@@ -44,6 +44,8 @@ jobs:
   Tests_on_flask_container:
     runs-on: ubuntu-latest
     steps:
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v2
     - name: Create docker image
       run: |
         docker build . -t omerap12/server
