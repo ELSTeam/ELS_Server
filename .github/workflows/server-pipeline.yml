@@ -40,3 +40,22 @@ jobs:
       run: |
         cd tests/
         python3 server_tests.py http://127.0.0.1:5000
+        
+  Tests_on_flask_container:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Create docker image
+      run: |
+        docker build . -t omerap12/server
+    - name: Create container from image
+      run: |
+        docker run -p 5000:5000 omerap12/server
+    - name: Test with pytest
+      run: |
+        cd tests/
+        python3 server_tests.py http://127.0.0.1:5000
+        
+      
+    
+
+  
