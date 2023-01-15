@@ -32,6 +32,7 @@ jobs:
     - name: Run server
       env:
        MONGO_DB_TOKEN: ${{ secrets.MONGO_DB }} 
+       KEY: ${{ secrets.MONGO_DB }}
       run: |
         # stop the build if there are Python syntax errors or undefined names
         python3 main.py $MONGO_DB_TOKEN &
@@ -58,7 +59,7 @@ jobs:
         docker build . -t omerap12/server
     - name: Create container from image
       run: |
-        docker run -p 5000:5000 -e key='${{ secrets.MONGO_DB }}' omerap12/server &
+        docker run -p 5000:5000 -e KEY='${{ secrets.MONGO_DB }}' omerap12/server &
     - name: Test with pytest
       run: |
         cd tests/
