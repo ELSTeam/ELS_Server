@@ -1,12 +1,14 @@
 import pymongo
 import sys
+import os
 
 
 class Mongo:
     def __init__(self):
         print("Connecting to Atlas")
         try:
-            self.url = f'mongodb+srv://els_admin:{sys.argv[1]}@els.r9xuzuv.mongodb.net/test'
+            mongo_key = os.environ["KEY"]
+            self.url = f'mongodb+srv://els_admin:{mongo_key}@els.r9xuzuv.mongodb.net/test'
             self.client = pymongo.MongoClient(self.url)
             self.db = self.client.els_db
             self.collection = self.db.els_db
