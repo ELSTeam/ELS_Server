@@ -67,7 +67,7 @@ class Mongo:
             return False
         return user["password"] == password
 
-    def add_new_contact_to_username(self, username: str, contact_info) -> bool:
+    def add_new_contact_to_username(self, username: str, contact_info: object) -> bool:
         """
         Function first check if username exists, and add contact to current username.
         :param contact_info: json that contains contact_name, phone. mail.
@@ -103,7 +103,7 @@ class Mongo:
         else:
             return user["contacts"]
 
-    def update_contact_details(self, username: str, contact_name: str, contact_info) -> bool:
+    def update_contact_details(self, username: str, contact_name: str, contact_info: object) -> bool:
         """
         Function update the contact details by specific username
         :param username: username of the user
