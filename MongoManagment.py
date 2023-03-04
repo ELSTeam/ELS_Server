@@ -18,13 +18,22 @@ class Mongo:
             exit(1)
         print("Connected.")
 
-    def find_user(self, user_name: str) -> object:
+    def find_user(self, username: str) -> object:
         """
         Function checks for user based on username.
         :param user_name: string username
         :return: user object if found else None
         """
-        return self.collection.find_one({"username": user_name})
+        return self.collection.find_one({"username": username})
+
+    def find_contact_by_user(self, username: str, contact_name: str) -> object:
+        """
+        Function checks if contact apperears in user's contact list by his contact_name.
+        :param user_name: string username
+        :param contact_name: string contact_name
+        :return: user object if found else None
+        """
+        return self.collection.find_one({"username": username, "contacts.name": contact_name})
 
     def add_user(self, user_name: str, password: str) -> bool:
         """
@@ -93,6 +102,44 @@ class Mongo:
             return []
         else:
             return user["contacts"]
+
+    def update_contact_details(self, username: str, contact_name: str, contact_info) -> bool:
+        """
+        Function update the contact details by specific username
+        :param username: username of the user
+        :param contact_name: contact of the user
+        :param contact_info: contact's info
+        :return bool: false - if user/contact not exist, true - if succeeded
+        """
+        user = self.find_user(username)
+        if not user:
+            return False
+        contact = self.find_contact_by_user(username, contact_name)
+        if not contact:
+            return False
+        self.collection.update_one(
+            {"username": username, "contacts.name": contact_name},
+            {"$set": {"contacts.$": contact_info}})
+        return True
+
+    def delete_contact_from_user(self, username: str, contact_name: str) -> bool:
+        """
+        Function delete the contact from specific username
+        :param username: username of the user
+        :param contact_name: contact of the user
+        :return bool: false - if user/contact not exist, true - if succeeded
+        """
+        user = self.find_user(username)
+        if not user:
+            return False
+        contact = self.find_contact_by_user(username, contact_name)
+        if not contact:
+            return False
+        self.collection.update_one(
+            {"username": username, "contacts.name": contact_name},
+            {"$pull": {"contacts": {"name": contact_name}}})
+        return True
+
 
 # print(mongo.find_user("omerap12"))
 # mongo.add_user("test", "testme")

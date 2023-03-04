@@ -3,6 +3,8 @@ import sys
 from flask import Flask, jsonify, request
 import pymongo
 import MongoManagment
+import ast
+
 
 if __name__ == "__main__":
     mongo_db = MongoManagment.Mongo()
@@ -91,6 +93,37 @@ if __name__ == "__main__":
         except Exception as e:
             print(e)
             # returns 500 if error is internal
+            return json.dumps({'success': False}), 500, {'ContentType': 'application/json'}
+
+
+    @app.route('/update_contact', methods=['PUT'])
+    def update_contact():
+        try:
+            data = request.json
+            username = data["username"]
+            contact_name = data["contact_name"]
+            contact_info = data["contact_info"]
+            if mongo_db.update_contact_details(username, contact_name, contact_info):
+                return json.dumps({'success': True}), 200, {'ContentType': 'application/json'}
+            else:
+                return json.dumps({'success': False}), 400, {'ContentType': 'application/json'}
+        except Exception as e:
+            print(e)
+            return json.dumps({'success': False}), 500, {'ContentType': 'application/json'}
+
+
+    @app.route('/delete_contact', methods=['DELETE'])
+    def delete_contact():
+        try:
+            data = request.json
+            username = data["username"]
+            contact_name = data["contact_name"]
+            if mongo_db.delete_contact_from_user(username, contact_name):
+                return json.dumps({'success': True}), 200, {'ContentType': 'application/json'}
+            else:
+                return json.dumps({'success': False}), 400, {'ContentType': 'application/json'}
+        except Exception as e:
+            print(e)
             return json.dumps({'success': False}), 500, {'ContentType': 'application/json'}
 
 
