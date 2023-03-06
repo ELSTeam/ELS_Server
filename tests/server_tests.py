@@ -56,6 +56,32 @@ def delete_user(url):
     res = requests.delete(url, json=payload, headers=headers)
     assert res.status_code == 200
 
+def add_contact(url):
+    """
+    Function purpose - check for adding contact on server side at /add_contact
+    """
+    payload = {"username": "omerap12", "contact_info": {"name":"Avital", "phone": "123123", "email": "aaa@aaa"}}
+    headers = {'Content-Type': 'application/json'}
+    res = requests.put(url, json=payload, headers=headers)
+    assert res.status_code == 200
+
+def update_contact(url):
+    """
+    Function purpose - check for update contact info on server side at /update_contact
+    """
+    payload = {"username": "omerap12","contact_name": "Avital", "contact_info": {"name":"Avital", "phone": "777", "email":"aaa@aaa"}}
+    headers = {'Content-Type': 'application/json'}
+    res = requests.put(url, json=payload, headers=headers)
+    assert res.status_code == 200
+
+def delete_contact(url):
+    """
+    Function purpose - check for delete contact on server side at /delete_contact
+    """
+    payload = {"username":"omerap12", "contact_name": "Avital"}
+    headers = {'Content-Type': 'application/json'}
+    res = requests.delete(url, json=payload, headers=headers)
+    assert res.status_code == 200
 
 if __name__ == "__main__":
     if len(sys.argv) < 2:
@@ -71,4 +97,12 @@ if __name__ == "__main__":
 
     print("Checking delete user")
     delete_user(sys.argv[1] + '/delete')
+    print("Passed")
+
+    print("checking update_contact")
+    add_contact(sys.argv[1]+'/update_contact')
+    print("Passed")
+
+    print("checking delete_contact")
+    add_contact(sys.argv[1]+'/delete_contact')
     print("Passed")
