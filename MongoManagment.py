@@ -140,6 +140,16 @@ class Mongo:
             {"$pull": {"contacts": {"name": contact_name}}})
         return True
 
+    def fall_detected(self, username: str, fall_info: object) -> bool:
+        user = self.find_user(username)
+        if not user:
+            return False
+        self.collection.update_one(
+            {"username": username},
+            {"$push": {"historyOfFalls": fall_info}}, upsert=True)
+        return True
+
+
 
 # print(mongo.find_user("omerap12"))
 # mongo.add_user("test", "testme")

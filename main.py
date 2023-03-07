@@ -1,9 +1,7 @@
 import json
-import sys
-from flask import Flask, jsonify, request
-import pymongo
+from flask import Flask, request
 import MongoManagment
-import ast
+from datetime import datetime
 
 
 if __name__ == "__main__":
@@ -124,6 +122,24 @@ if __name__ == "__main__":
                 return json.dumps({'success': False}), 400, {'ContentType': 'application/json'}
         except Exception as e:
             print(e)
+            return json.dumps({'success': False}), 500, {'ContentType': 'application/json'}
+
+    @app.route('/fall_detected', methods=['POST'])
+    def fall_detected():
+        try:
+            data = request.json
+            username = data["username"]
+            fall_info = data["fall_info"]
+            fall_info["date"] = datetime.now()
+            if mongo_db.fall_detected(username, fall_info):
+                # returns 200 fall info added successfully to DB.
+                return json.dumps({'success': True}), 200, {'ContentType': 'application/json'}
+            else:
+                # returns 400 if username is not exists
+                return json.dumps({'success': True}), 400, {'ContentType': 'application/json'}
+        except Exception as e:
+            print(e)
+            # returns 500 if error is internal
             return json.dumps({'success': False}), 500, {'ContentType': 'application/json'}
 
 
