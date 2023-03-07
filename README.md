@@ -187,3 +187,30 @@ curl -v -X GET http://127.0.0.1:5000/all_contacts -H 'Content-Type: application/
 | `200 OK` |  returns list of objects |
 | `404 BAD REQUEST` |  user/contact not found (empty list)|
 | `500 INTERNAL SERVER ERROR` | internal server error |
+
+
+## Fall Detection
+
+```http
+  POST /fall_detected
+```
+
+| Parameter | Type     | Description                |
+| :-------- | :------- | :------------------------- |
+| `username` | `string` |user's username |
+| `fall_info` | `json` |contains the details below ↓ |
+| `date` | `string` | the date of falling |
+
+
+#### CURL example:
+```bash
+curl -v -X POST http://127.0.0.1:5000/fall_detected -H 'Content-Type: application/json'
+ -d '{"username":"omerap12", "fall_info":{"date": ""}}'
+```
+
+#### Status Code & Description:
+|  |                |
+| :-------- | :------------------------- |
+| `200 OK` |  if added to fall history successfully |
+| `404 BAD REQUEST` |  user not found |
+| `500 INTERNAL SERVER ERROR` | internal server error |
