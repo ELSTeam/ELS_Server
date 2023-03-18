@@ -1,146 +1,153 @@
+# Based on Zed code - Person Fall detection using raspberry pi camera and opencv lib. Link: https://www.youtube.com/watch?v=eXMYZedp0Uo
 import json
-from flask import Flask, request
-import MongoManagment
+import os
+
+import cv2
+import time
+import requests
 from datetime import datetime
+from datetime import date
+import argparse
+import threading
+
+
+class Detector:
+    def __init__(self, THRESHOLD: int, mode: int, url: str) -> None:
+        self.THRESHOLD = THRESHOLD
+        self.server_url = url
+        self.last_fall = None  # save time stamp of the prev fall
+        self.fitToEllipse = False  # Number of minutes between Falls to make an alert
+        self.fgbg = cv2.createBackgroundSubtractorMOG2()
+        self.j = 0
+        self.username = None
+        self.password = None
+        self.connteced = False
+        if mode == 1:
+            self.cap = cv2.VideoCapture('example_video.mp4')
+        elif mode == 0:
+            self.cap = cv2.VideoCapture(0)
+        else:
+            print('Mode is 0 or 1')
+            return
+        width = int(self.cap.get(cv2.CAP_PROP_FRAME_WIDTH) + 0.5)
+        height = int(self.cap.get(cv2.CAP_PROP_FRAME_HEIGHT) + 0.5)
+        size = (width, height)
+        fourcc = cv2.VideoWriter_fourcc(*'XVID')
+        self.video_fall_name = f'fall_{date.today()}.mp4'
+        self.out = cv2.VideoWriter(self.video_fall_name, fourcc, 20.0, size)
+        self.seconds_interval = 5
+
+    def login(self, username: str, password: str) -> None:
+        """
+        Connect user to ELS server. provide user name, password and url of local/production environment
+        """
+        payload = {"username": username, "password": password}
+        headers = {'Content-Type': 'application/json'}
+        res = requests.post(f'{self.server_url}/sign_in', json=payload, headers=headers)
+        if res.status_code == 200:
+            self.connteced = True
+            self.username = username
+            self.password = password
+        else:
+            print("Wrong username / password")
+
+    def start(self) -> None:
+        if not self.connteced:
+            print("Please login first (call login function)")
+            return
+        while (1):
+            ret, frame = self.cap.read()
+            self.frame = frame
+
+            # Convert each frame to gray scale and subtract the background
+            try:
+                gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+                fgmask = self.fgbg.apply(gray)
+
+                # Find contours
+                contours, _ = cv2.findContours(fgmask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+
+                if contours:
+                    # List to hold all areas
+                    areas = []
+
+                    for contour in contours:
+                        ar = cv2.contourArea(contour)
+                        areas.append(ar)
+
+                    max_area = max(areas, default=0)
+
+                    max_area_index = areas.index(max_area)
+
+                    cnt = contours[max_area_index]
+
+                    M = cv2.moments(cnt)
+
+                    x, y, w, h = cv2.boundingRect(cnt)
+
+                    cv2.drawContours(fgmask, [cnt], 0, (255, 255, 255), 3, maxLevel=0)
+
+                    if h < w:
+                        self.j += 1
+
+                    # Falled detected
+                    if self.j > 10:
+                        if self.last_fall is None:
+                            self.last_fall = datetime.now()  # save the time of the first fall
+                            threading.Thread(target=self.send_falling_post).start()
+                            print("FALL Detected")
+                        else:
+                            time_now = datetime.now()
+                            delta = time_now - self.last_fall
+                            # Checking if the falling occured after the threshold
+                            if self.THRESHOLD < int(delta.total_seconds() // 60):
+                                self.last_fall = time_now
+                                threading.Thread(target=self.send_falling_post).start()
+                                print("FALL Detected")
+                        cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 0, 255), 2)
+
+                    if h > w:
+                        self.j = 0
+                        cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
+
+                    # showing the video
+                    cv2.imshow('video', frame)
+
+                    if cv2.waitKey(33) == 27:
+                        break
+            except Exception as e:
+                print(e)
+                break
+        cv2.destroyAllWindows()
+
+    def send_falling_post(self):
+        while (datetime.now() - self.last_fall).seconds < self.seconds_interval:
+            self.out.write(self.frame)
+            time.sleep(0.05)
+        print("Finished filming")
+        payload = {"username": self.username}
+        json_obj = json.dumps(payload)
+        with open("j.json", "w") as outfile:
+            outfile.write(json_obj)
+        current_working_path = os.getcwd() + os.sep
+        video_fall_path = current_working_path + self.video_fall_name
+        json_fall_path = current_working_path + "j.json"
+        files = {'file': open(video_fall_path, "rb"),
+                 'data': open(json_fall_path, "rb")}
+        res = requests.post(f'{self.server_url}/fall_detected', files=files)
+        if res.status_code != 200:
+            print("Error sending post")
+            exit(1)
+        os.remove(video_fall_path)
+        os.remove(json_fall_path)
 
 
 if __name__ == "__main__":
-    mongo_db = MongoManagment.Mongo()
-    app = Flask(__name__)
-
-    @app.route('/sign_in', methods=['POST'])
-    def sign_in():
-        try:
-            data = request.json
-            username = data["username"]
-            password = data["password"]
-            if mongo_db.check_username_password(username, password):
-                # returns 200 if username and password are correct
-                return json.dumps({'success': True}), 200, {'ContentType': 'application/json'}
-            else:
-                # returns 400 if username or password is incorrect or username is exists
-                return json.dumps({'success': True}), 400, {'ContentType': 'application/json'}
-        except Exception as e:
-            print(e)
-            # returns 500 if error is internal
-            return json.dumps({'success': False}), 500, {'ContentType': 'application/json'}
-
-    @app.route('/sign_up', methods=['POST'])
-    def sign_up():
-        try:
-            data = request.json
-            username = data["username"]
-            password = data["password"]
-            if mongo_db.add_user(username, password):
-                # returns 200 if username is not exists and created successfully new user in DB.
-                return json.dumps({'success': True}), 200, {'ContentType': 'application/json'}
-            else:
-                # returns 400 if username is already exists
-                return json.dumps({'success': True}), 400, {'ContentType': 'application/json'}
-        except Exception as e:
-            print(e)
-            # returns 500 if error is internal
-            return json.dumps({'success': False}), 500, {'ContentType': 'application/json'}
-
-
-    @app.route('/delete', methods=['DELETE'])
-    def delete():
-        try:
-            data = request.json
-            username = data["username"]
-            password = data["password"]
-            mongo_db.delete_user(username, password)
-            # returns 200 - deleted user successfully
-            return json.dumps({'success': True}), 200, {'ContentType': 'application/json'}
-        except Exception as e:
-            print(e)
-            # returns 500 if error is internal
-            return json.dumps({'success': False}), 500, {'ContentType': 'application/json'}
-
-
-    @app.route('/add_contact', methods=['PUT'])
-    def add_contact():
-        try:
-            data = request.json
-            username = data["username"]
-            contact_info = data["contact_info"]
-            if mongo_db.add_new_contact_to_username(username, contact_info):
-                # returns 200 if added contact successfully
-                return json.dumps({'success': True}), 200, {'ContentType': 'application/json'}
-            else:
-                # returns 400 if username is not exists.
-                return json.dumps({'success': False}), 400, {'ContentType': 'application/json'}
-        except Exception as e:
-            print(e)
-            # returns 500 if error is internal
-            return json.dumps({'success': False}), 500, {'ContentType': 'application/json'}
-
-
-    @app.route('/all_contacts', methods=['GET'])
-    def get_all_contacts():
-        try:
-            data = request.json
-            username = data["username"]
-            contacts_json = mongo_db.get_all_contacts(username)
-            if not contacts_json:
-                # returns 400 if list of contacts is empty -> user not found.
-                return json.dumps({'success': False}), 400, {'ContentType': 'application/json'}
-            else:
-                # returns 200 if user has list of contacts and returns list of json objects.
-                return json.dumps({'contacts': contacts_json}), 200, {'ContentType': 'application/json'}
-        except Exception as e:
-            print(e)
-            # returns 500 if error is internal
-            return json.dumps({'success': False}), 500, {'ContentType': 'application/json'}
-
-
-    @app.route('/update_contact', methods=['PUT'])
-    def update_contact():
-        try:
-            data = request.json
-            username = data["username"]
-            contact_name = data["contact_name"]
-            contact_info = data["contact_info"]
-            if mongo_db.update_contact_details(username, contact_name, contact_info):
-                return json.dumps({'success': True}), 200, {'ContentType': 'application/json'}
-            else:
-                return json.dumps({'success': False}), 400, {'ContentType': 'application/json'}
-        except Exception as e:
-            print(e)
-            return json.dumps({'success': False}), 500, {'ContentType': 'application/json'}
-
-
-    @app.route('/delete_contact', methods=['DELETE'])
-    def delete_contact():
-        try:
-            data = request.json
-            username = data["username"]
-            contact_name = data["contact_name"]
-            if mongo_db.delete_contact_from_user(username, contact_name):
-                return json.dumps({'success': True}), 200, {'ContentType': 'application/json'}
-            else:
-                return json.dumps({'success': False}), 400, {'ContentType': 'application/json'}
-        except Exception as e:
-            print(e)
-            return json.dumps({'success': False}), 500, {'ContentType': 'application/json'}
-
-    @app.route('/fall_detected', methods=['POST'])
-    def fall_detected():
-        try:
-            data = request.json
-            username = data["username"]
-            fall_info = data["fall_info"]
-            fall_info["date"] = datetime.now()
-            if mongo_db.fall_detected(username, fall_info):
-                # returns 200 fall info added successfully to DB.
-                return json.dumps({'success': True}), 200, {'ContentType': 'application/json'}
-            else:
-                # returns 400 if username is not exists
-                return json.dumps({'success': True}), 400, {'ContentType': 'application/json'}
-        except Exception as e:
-            print(e)
-            # returns 500 if error is internal
-            return json.dumps({'success': False}), 500, {'ContentType': 'application/json'}
-
-
-    app.run(port=5000, debug=True, host='0.0.0.0')
+    parser = argparse.ArgumentParser(description='Arguments for Falling Detector')
+    parser.add_argument('Threshold', type=int, help='Threshold number in minutes')
+    parser.add_argument('Mode', type=int, help='Mode for the Detector.\n 0 -> camera input, 1 -> example video input')
+    parser.add_argument('URL', type=str, help='The URL of the server')
+    args = parser.parse_args()
+    detector = Detector(args.Threshold, args.Mode, args.URL)  # gets the number of Threshold in minutes.
+    detector.login("omerap12", "Aa123456!")
+    detector.start()
