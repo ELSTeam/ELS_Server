@@ -1,5 +1,15 @@
 
 # API ELS-Server
+## Environment Variables
+In order to run the sever a few credentials needs to be passed as an environment variables.
+| Variable | Description |
+| :-------- | :------- |
+| `KEY` | `The key to out mongodb database` |
+| `MAIL_ADDR` | `The mail address of the server` |
+| `MAIL_PASS` | `The mail password of the sever` |
+| `account_sid` | `The accound sid of twilio` |
+| `auth_token` | `The auth token of twilio` |
+| `twilio_phone` | `The twilio phone number` |
 
 ## Sign In
 
