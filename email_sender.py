@@ -1,12 +1,13 @@
 import smtplib
 import ssl
 from email.message import EmailMessage
+import os
 
 class EmailSender:
     def __init__(self) -> None:
         # Define email sender and receiver
-        self.email_sender = 'elderlylifesavior@gmail.com'
-        self.email_password = 'ofocdoeyyvpblrka'
+        self.email_sender = os.environ['MAIL_ADDR']
+        self.email_password = os.environ['MAIL_PASS']
     def send_mail(self,email_receiver:str, subject:str,message:str) -> None:
         """
         Send to email_receiver an email with subject and message
