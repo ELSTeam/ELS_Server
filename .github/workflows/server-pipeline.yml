@@ -45,7 +45,7 @@ jobs:
         cd tests/
         python3 server_tests.py http://127.0.0.1:5000
         
-  Tests_and_deply_Flask_image:
+  Tests_and_deploy_Flask_image:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
