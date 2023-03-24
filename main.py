@@ -173,6 +173,14 @@ if __name__ == "__main__":
             time.sleep(TIME)
         # close the fall in progress
         mongo_db.update_fall_in_process(username, False)
+        for contact in contacts_list:
+            phone = contact['phone']
+            email = contact['email']
+            email_sender.send_mail(email, "Someone is on the way", f'KUDOS!')
+            # sms_sender.send_message(phone,f'KUDOS!\nClick here to confirm: http://127.0.0.1:5000/fall_detected/{user_name}')
+            # sms_sender.. - production
+
+
 
     @app.route('/fall_in_process/<username>', methods=['GET'])
     def fall_in_process(username):
