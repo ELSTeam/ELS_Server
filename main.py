@@ -2,6 +2,7 @@ import json
 from flask import Flask, request
 import MongoManagment
 from datetime import datetime
+from bson.binary import Binary
 
 
 if __name__ == "__main__":
@@ -127,16 +128,17 @@ if __name__ == "__main__":
     @app.route('/fall_detected', methods=['POST'])
     def fall_detected():
         try:
-            data = request.json
+            video_file = request.files['file']
+            json_file = request.files['data']
+            data = json.loads(json_file.read())
             username = data["username"]
-            fall_info = data["fall_info"]
-            fall_info["date"] = datetime.now()
-            if mongo_db.fall_detected(username, fall_info):
-                # returns 200 fall info added successfully to DB.
+            data_json = {"date": datetime.now().strftime("%d/%m/%Y %H:%M:%S"), "video_file": {}}
+            file_metadata = {"filename": video_file.filename, "content_type": "video/mp4"}
+            data_json["video_file"] = {"metadata": file_metadata, "data": video_file.read()}
+            if mongo_db.fall_detected(username, data_json):
                 return json.dumps({'success': True}), 200, {'ContentType': 'application/json'}
             else:
-                # returns 400 if username is not exists
-                return json.dumps({'success': True}), 400, {'ContentType': 'application/json'}
+                return json.dumps({'success': False}), 400, {'ContentType': 'application/json'}
         except Exception as e:
             print(e)
             # returns 500 if error is internal
