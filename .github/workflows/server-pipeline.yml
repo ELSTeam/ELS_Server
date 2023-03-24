@@ -28,6 +28,7 @@ jobs:
         pip install flask
         pip install requests
         pip install pymongo
+        pip install twilio
         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
     - name: Run server
       env:
