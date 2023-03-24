@@ -149,6 +149,14 @@ class Mongo:
             {"$push": {"historyOfFalls": fall_info}}, upsert=True)
         return True
 
+    def get_fall_in_process(self, username: str) -> bool:
+        user = self.collection.find_one({"username": username})
+        return user["fallInProcess"]
+
+    def update_fall_in_process(self, username: str, bool_value: bool) -> None:
+        self.collection.update_one(
+            {"username": username},
+            {"$set": {"fallInProcess": bool_value}})
 
 
 # print(mongo.find_user("omerap12"))
