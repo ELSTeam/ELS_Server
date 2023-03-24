@@ -1,5 +1,5 @@
 import pymongo
-import sys
+from bson.binary import Binary
 import os
 
 
