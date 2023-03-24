@@ -150,10 +150,17 @@ class Mongo:
         return True
 
     def get_fall_in_process(self, username: str) -> bool:
+        """
+        check if the flag in the user's document is true or false
+        """
         user = self.collection.find_one({"username": username})
         return user["fallInProcess"]
 
     def update_fall_in_process(self, username: str, bool_value: bool) -> None:
+        """
+        update the flag in the user's document when contact clicks on the link,
+        or
+        """
         self.collection.update_one(
             {"username": username},
             {"$set": {"fallInProcess": bool_value}})
