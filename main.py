@@ -158,6 +158,10 @@ if __name__ == "__main__":
             return json.dumps({'success': False}), 500, {'ContentType': 'application/json'}
 
     def send_alrets(user_name:str, contacts_list:List[dict],sms_sender:SMSSender,email_sender:EmailSender) -> None:
+        """
+        Send alert every x time (can change the time variable at the beggining of the file)
+        """
+        # get fallinprogress - replace the flag
         flag = False
         while not flag:
             for contact in contacts_list:
@@ -167,7 +171,7 @@ if __name__ == "__main__":
                 # sms_sender.send_message(phone,f'KUDOS!\nClick here to confirm: http://127.0.0.1:5000/fall_detected/{user_name}')
                 # sms_sender.. - production
             time.sleep(TIME)
-        # close the flag
+        # close the fall in progress
 
 
     
