@@ -1,16 +1,23 @@
 import json
+import time
+import threading
+from typing import List
 from flask import Flask, request
 import MongoManagment
 from datetime import datetime
 from bson.binary import Binary
+from sms_sender import SMSSender
+from email_sender import EmailSender
 
 
 if __name__ == "__main__":
     mongo_db = MongoManagment.Mongo()
     app = Flask(__name__)
+    TIME=5*60
 
     @app.route('/sign_in', methods=['POST'])
     def sign_in():
+        
         try:
             data = request.json
             username = data["username"]
@@ -135,14 +142,38 @@ if __name__ == "__main__":
             data_json = {"date": datetime.now().strftime("%d/%m/%Y %H:%M:%S"), "video_file": {}}
             file_metadata = {"filename": video_file.filename, "content_type": "video/mp4"}
             data_json["video_file"] = {"metadata": file_metadata, "data": video_file.read()}
-            if mongo_db.fall_detected(username, data_json):
-                return json.dumps({'success': True}), 200, {'ContentType': 'application/json'}
-            else:
-                return json.dumps({'success': False}), 400, {'ContentType': 'application/json'}
+            
+            # send mail and sms alerts using threading
+            mail_sender = EmailSender()
+            sms_sender = SMSSender()
+            contacts_list = mongo_db.get_all_contacts(username)
+            threading.Thread(target=send_alrets,args=(username,contacts_list,sms_sender,mail_sender)).start()
+
+            # if mongo_db.fall_detected(username, data_json):
+            return json.dumps({'success': True}), 200, {'ContentType': 'application/json'}
+            # else:
+            #     return json.dumps({'success': False}), 400, {'ContentType': 'application/json'}
         except Exception as e:
             print(e)
             # returns 500 if error is internal
             return json.dumps({'success': False}), 500, {'ContentType': 'application/json'}
 
+    def send_alrets(user_name:str, contacts_list:List[dict],sms_sender:SMSSender,email_sender:EmailSender) -> None:
+        """
+        Send alert every x time (can change the time variable at the beggining of the file)
+        """
+        # get fallinprogress - replace the flag
+        flag = False
+        while not flag:
+            for contact in contacts_list:
+                phone = contact['phone']
+                email = contact['email']
+                email_sender.send_mail(email,"Fall detected",f'KUDOS!\nClick here to confirm: http://127.0.0.1:5000/fall_detected/{user_name}')
+                # sms_sender.send_message(phone,f'KUDOS!\nClick here to confirm: http://127.0.0.1:5000/fall_detected/{user_name}')
+                # sms_sender.. - production
+            time.sleep(TIME)
+        # close the fall in progress
 
+
+    
     app.run(port=5000, debug=True, host='0.0.0.0')
