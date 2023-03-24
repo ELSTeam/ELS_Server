@@ -13,7 +13,7 @@ from email_sender import EmailSender
 if __name__ == "__main__":
     mongo_db = MongoManagment.Mongo()
     app = Flask(__name__)
-    TIME=5*60
+    TIME=10
 
     @app.route('/sign_in', methods=['POST'])
     def sign_in():
@@ -147,7 +147,7 @@ if __name__ == "__main__":
             mail_sender = EmailSender()
             sms_sender = SMSSender()
             contacts_list = mongo_db.get_all_contacts(username)
-            threading.Thread(target=send_alrets,args=(username,contacts_list,sms_sender,mail_sender)).start()
+            threading.Thread(target=send_alerts, args=(username, contacts_list, sms_sender, mail_sender)).start()
 
             # if mongo_db.fall_detected(username, data_json):
             return json.dumps({'success': True}), 200, {'ContentType': 'application/json'}
@@ -158,13 +158,12 @@ if __name__ == "__main__":
             # returns 500 if error is internal
             return json.dumps({'success': False}), 500, {'ContentType': 'application/json'}
 
-    def send_alrets(user_name:str, contacts_list:List[dict],sms_sender:SMSSender,email_sender:EmailSender) -> None:
+    def send_alerts(username: str, contacts_list: List[dict], sms_sender: SMSSender, email_sender: EmailSender) -> None:
         """
         Send alert every x time (can change the time variable at the beggining of the file)
         """
         # get fallinprogress - replace the flag
-        flag = False
-        while not flag:
+        while not mongo_db.get_fall_in_process(username):
             for contact in contacts_list:
                 phone = contact['phone']
                 email = contact['email']
@@ -173,7 +172,11 @@ if __name__ == "__main__":
                 # sms_sender.. - production
             time.sleep(TIME)
         # close the fall in progress
+        mongo_db.update_fall_in_process(username, False)
+
+    @app.route('/fall_in_process/<username>', methods=['POST'])
+    def fall_in_process(username):
+        mongo_db.update_fall_in_process(username, True)
 
 
-    
     app.run(port=5000, debug=True, host='0.0.0.0')
