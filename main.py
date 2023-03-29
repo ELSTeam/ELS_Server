@@ -8,12 +8,17 @@ from datetime import datetime
 from bson.binary import Binary
 from sms_sender import SMSSender
 from email_sender import EmailSender
+from flask_cors import CORS
+
 
 
 if __name__ == "__main__":
     mongo_db = MongoManagment.Mongo()
     app = Flask(__name__)
     TIME=10
+    CORS(app)
+
+
 
     @app.route('/sign_in', methods=['POST'])
     def sign_in():
