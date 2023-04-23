@@ -16,8 +16,6 @@ if __name__ == "__main__":
     mongo_db = MongoManagment.Mongo()
     app = Flask(__name__)
     TIME=10
-    CORS(app)
-
 
 
     @app.route('/sign_in', methods=['POST'])
@@ -186,11 +184,30 @@ if __name__ == "__main__":
             # sms_sender.. - production
 
 
-
     @app.route('/fall_in_process/<username>', methods=['GET'])
     def fall_in_process(username):
         mongo_db.update_fall_in_process(username, True)
         return json.dumps({'success': True}), 200, {'ContentType': 'application/json'}
 
 
+
+    @app.route('/get_latest_video', methods=['POST'])
+    def get_latest_video():
+        try:
+            data = request.json
+            username = data["username"]
+            output = mongo_db.get_latest_video(username)
+            if output:
+                return output["data"], 200, {'ContentType': 'application/json'}
+            else:
+                return json.dumps({'success': False}), 400, {'ContentType': 'application/json'}
+        except Exception as e:
+            print(e)
+            return json.dumps({'success': False}), 500, {'ContentType': 'application/json'}
+
+
+
     app.run(port=5000, debug=True, host='0.0.0.0')
+
+
+

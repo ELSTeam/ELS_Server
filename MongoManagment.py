@@ -165,6 +165,12 @@ class Mongo:
             {"username": username},
             {"$set": {"fallInProcess": bool_value}})
 
+    def get_latest_video(self, username: str):
+        user = self.collection.find_one({"username": username})
+        if not user:
+            return []
+        return user["historyOfFalls"][-1]["video_file"]
+
 
 # print(mongo.find_user("omerap12"))
 # mongo.add_user("test", "testme")
