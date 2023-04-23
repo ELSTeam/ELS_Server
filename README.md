@@ -224,3 +224,28 @@ curl -v -X POST http://127.0.0.1:5000/fall_detected -H 'Content-Type: applicatio
 | `200 OK` |  if added to fall history successfully |
 | `404 BAD REQUEST` |  user not found |
 | `500 INTERNAL SERVER ERROR` | internal server error |
+
+
+## Get latest video
+
+```http
+  POST /get_latest_video
+```
+
+| Parameter | Type     | Description                |
+| :-------- | :------- | :------------------------- |
+| `username` | `string` |user's username |
+
+
+#### CURL example:
+```bash
+curl -v -X POST http://127.0.0.1:5000/get_latest_video -H 'Content-Type: application/json' -d 
+'{"username":"omerap12"}'
+```
+
+#### Status Code & Description:
+|  |                |
+| :-------- | :------------------------- |
+| `200 OK` | video's bytes sended ok |
+| `400 BAD REQUEST` | user not found |
+| `500 INTERNAL SERVER ERROR` | internal server error |
