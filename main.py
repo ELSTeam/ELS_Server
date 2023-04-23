@@ -8,12 +8,15 @@ from datetime import datetime
 from bson.binary import Binary
 from sms_sender import SMSSender
 from email_sender import EmailSender
+from flask_cors import CORS
+
 
 
 if __name__ == "__main__":
     mongo_db = MongoManagment.Mongo()
     app = Flask(__name__)
     TIME=10
+
 
     @app.route('/sign_in', methods=['POST'])
     def sign_in():
@@ -187,6 +190,7 @@ if __name__ == "__main__":
         return json.dumps({'success': True}), 200, {'ContentType': 'application/json'}
 
 
+
     @app.route('/get_latest_video', methods=['POST'])
     def get_latest_video():
         try:
@@ -202,4 +206,8 @@ if __name__ == "__main__":
             return json.dumps({'success': False}), 500, {'ContentType': 'application/json'}
 
 
+
     app.run(port=5000, debug=True, host='0.0.0.0')
+
+
+
