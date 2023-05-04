@@ -8,6 +8,7 @@ from datetime import datetime
 from bson.binary import Binary
 from sms_sender import SMSSender
 from email_sender import EmailSender
+from io import BytesIO
 
 
 if __name__ == "__main__":
@@ -87,8 +88,11 @@ if __name__ == "__main__":
     @app.route('/all_contacts', methods=['GET'])
     def get_all_contacts():
         try:
-            data = request.json
-            username = data["username"]
+            if request.args:
+                username = request.args.get("username")
+            else:
+                data = request.json
+                username = data["username"]
             contacts_json = mongo_db.get_all_contacts(username)
             if not contacts_json:
                 # returns 400 if list of contacts is empty -> user not found.
@@ -200,6 +204,47 @@ if __name__ == "__main__":
         except Exception as e:
             print(e)
             return json.dumps({'success': False}), 500, {'ContentType': 'application/json'}
+
+
+    # def func():
+    #
+    #
+    #     stream = cv2.VideoCapture(0)
+    #     fourcc = cv2.VideoWriter_fourcc('x264')
+    #
+    #     data = BytesIO()
+    #
+    #     # added these to try to make data appear more like a string
+    #     data.name = 'stream.{}'.format('av1')
+    #     data.__str__ = lambda x: x.name
+    #
+    #     try:
+    #         video = cv2.VideoWriter(data, fourcc=fourcc, fps=30., frameSize=(640, 480))
+    #         start = data.tell()
+    #
+    #         # Check if camera opened successfully
+    #         if (stream.isOpened() == False):
+    #             print("Unable to read camera feed", file=sys.stderr)
+    #             exit(1)
+    #
+    #         # record loop
+    #         while True:
+    #             _, frame = stream.read()
+    #             video.write(frame)
+    #             data.seek(start)
+    #             # do stuff with frame bytes
+    #             # ...
+    #
+    #             data.seek(start)
+    #
+    #     finally:
+    #         try:
+    #             video.release()
+    #         except:
+    #             pass
+    #
+    # finally:
+    # stream.release()
 
 
     app.run(port=5000, debug=True, host='0.0.0.0')
