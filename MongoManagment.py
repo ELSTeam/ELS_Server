@@ -183,6 +183,22 @@ class Mongo:
         file_data = self.collection.find_one({'filename': fall_info_from_mongo["filename"]})
         return file_data["data"]
 
+    def upload_photo(self, username: str, encoded_content: bytes) -> bool:
+        user = self.collection.find_one({"username": username})
+        if not user:
+            return []
+        self.collection.update_one(
+            {"username": username},
+            {"$push": {"profile_img": encoded_content}}, upsert=True)
+        return True
+
+    def get_photo(self, username: str) -> bytes:
+        user = self.collection.find_one({"username": username})
+        if not user:
+            return []
+        return user["profile_img"][0]
+
+
 # print(mongo.find_user("omerap12"))
 # mongo.add_user("test", "testme")
 # print(mongo.check_username_password("omerap12", "Aa123456!"))  # return True

@@ -2,6 +2,8 @@ import json
 import time
 import threading
 from typing import List
+
+import requests
 from flask import Flask, request
 import MongoManagment
 from datetime import datetime
@@ -198,46 +200,38 @@ if __name__ == "__main__":
         except Exception as e:
             print(e)
             return json.dumps({'success': False}), 500, {'ContentType': 'application/json'}
-        
-    # def func():
-    #
-    #
-    #     stream = cv2.VideoCapture(0)
-    #     fourcc = cv2.VideoWriter_fourcc('x264')
-    #
-    #     data = BytesIO()
-    #
-    #     # added these to try to make data appear more like a string
-    #     data.name = 'stream.{}'.format('av1')
-    #     data.__str__ = lambda x: x.name
-    #
-    #     try:
-    #         video = cv2.VideoWriter(data, fourcc=fourcc, fps=30., frameSize=(640, 480))
-    #         start = data.tell()
-    #
-    #         # Check if camera opened successfully
-    #         if (stream.isOpened() == False):
-    #             print("Unable to read camera feed", file=sys.stderr)
-    #             exit(1)
-    #
-    #         # record loop
-    #         while True:
-    #             _, frame = stream.read()
-    #             video.write(frame)
-    #             data.seek(start)
-    #             # do stuff with frame bytes
-    #             # ...
-    #
-    #             data.seek(start)
-    #
-    #     finally:
-    #         try:
-    #             video.release()
-    #         except:
-    #             pass
-    #
-    # finally:
-    # stream.release()
+
+
+    @app.route('/upload_photo', methods=['POST'])
+    def upload_photo():
+        try:
+            photo_file = request.files['file']
+            content = photo_file.read()
+            encoded_content = base64.b64encode(content)
+            username = photo_file.filename.split('#')[1].split('.')[0]
+            if mongo_db.upload_photo(username, encoded_content):
+                return json.dumps({'success': True}), 200, {'ContentType': 'application/json'}
+            else:
+                return json.dumps({'success': False}), 400, {'ContentType': 'application/json'}
+        except Exception as e:
+            print(e)
+            # returns 500 if error is internal
+            return json.dumps({'success': False}), 500, {'ContentType': 'application/json'}
+
+
+    @app.route('/get_photo', methods=['GET'])
+    def get_photo():
+        try:
+            data = request.json
+            username = data["username"]
+            output = mongo_db.get_photo(username)
+            if output:
+                return output, 200, {'ContentType': 'application/json'}
+            else:
+                return json.dumps({'success': False}), 400, {'ContentType': 'application/json'}
+        except Exception as e:
+            print(e)
+            return json.dumps({'success': False}), 500, {'ContentType': 'application/json'}
 
 
     app.run(port=5000, debug=True, host='0.0.0.0')
