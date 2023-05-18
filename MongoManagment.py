@@ -6,7 +6,6 @@ import os
 import gridfs
 import base64
 import io
-import ffmpeg
 from gridfs import GridFSBucket
 
 
