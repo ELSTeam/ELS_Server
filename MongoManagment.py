@@ -1,6 +1,13 @@
+import json
+from datetime import datetime
 import pymongo
 from bson.binary import Binary
 import os
+import gridfs
+import base64
+import io
+from gridfs import GridFSBucket
+
 
 
 class Mongo:
@@ -11,6 +18,8 @@ class Mongo:
             self.url = f'mongodb+srv://els_admin:{mongo_key}@els.r9xuzuv.mongodb.net/test'
             self.client = pymongo.MongoClient(self.url)
             self.db = self.client.els_db
+            self.fs = gridfs.GridFS(self.db)
+            self.bucket = GridFSBucket(self.db, "files")
             self.collection = self.db.els_db
         except Exception as e:
             print("Error from Atlas")
@@ -144,9 +153,10 @@ class Mongo:
         user = self.find_user(username)
         if not user:
             return False
+        self.collection.insert_one(fall_info)
         self.collection.update_one(
             {"username": username},
-            {"$push": {"historyOfFalls": fall_info}}, upsert=True)
+            {"$push": {"historyOfFalls": {"filename": fall_info["filename"], "date": datetime.now().strftime("%d/%m/%Y %H:%M:%S")}}}, upsert=True)
         return True
 
     def get_fall_in_process(self, username: str) -> bool:
@@ -169,8 +179,9 @@ class Mongo:
         user = self.collection.find_one({"username": username})
         if not user:
             return []
-        return user["historyOfFalls"][-1]["video_file"]
-
+        fall_info_from_mongo = user["historyOfFalls"][-1]
+        file_data = self.collection.find_one({'filename': fall_info_from_mongo["filename"]})
+        return file_data["data"]
 
 # print(mongo.find_user("omerap12"))
 # mongo.add_user("test", "testme")
