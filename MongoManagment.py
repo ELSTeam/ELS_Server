@@ -184,12 +184,6 @@ class Mongo:
         file_data = self.collection.find_one({'filename': fall_info_from_mongo["filename"]})
         return file_data["data"]
 
-
-mongo = Mongo()
-file_vid = mongo.get_latest_video("omerap12")
-with open(file_vid["filename"], "wb") as f:
-    f.write(file_vid["data"])
-f.close()
 # print(mongo.find_user("omerap12"))
 # mongo.add_user("test", "testme")
 # print(mongo.check_username_password("omerap12", "Aa123456!"))  # return True
