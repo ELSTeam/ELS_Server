@@ -18,6 +18,7 @@ import zlib
 if __name__ == "__main__":
     mongo_db = MongoManagment.Mongo()
     app = Flask(__name__)
+    CORS(app)
     TIME=10
     @app.route('/sign_in', methods=['POST'])
     def sign_in():
