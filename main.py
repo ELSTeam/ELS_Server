@@ -186,6 +186,37 @@ if __name__ == "__main__":
     def fall_in_process(username):
         mongo_db.update_fall_in_process(username, True)
         return json.dumps({'success': True}), 200, {'ContentType': 'application/json'}
+
+
+    @app.route('/all_history', methods=['POST'])
+    def get_all_history():
+        try:
+            data = request.json
+            username = data["username"]
+            output = mongo_db.get_all_history(username)
+            if output:
+                return output, 200, {'ContentType': 'application/json'}
+            else:
+                return json.dumps({'success': False}), 400, {'ContentType': 'application/json'}
+        except Exception as e:
+            print(e)
+            return json.dumps({'success': False}), 500, {'ContentType': 'application/json'}
+
+
+    @app.route('/get_video', methods=['POST'])
+    def get_video():
+        try:
+            data = request.json
+            filename = data["filename"]
+            output = mongo_db.get_video(filename)
+            if output:
+                return output, 200, {'ContentType': 'application/json'}
+            else:
+                return json.dumps({'success': False}), 400, {'ContentType': 'application/json'}
+        except Exception as e:
+            print(e)
+            return json.dumps({'success': False}), 500, {'ContentType': 'application/json'}
+
     
     @app.route('/get_latest_video', methods=['POST'])
     def get_latest_video():
@@ -219,7 +250,7 @@ if __name__ == "__main__":
             return json.dumps({'success': False}), 500, {'ContentType': 'application/json'}
 
 
-    @app.route('/get_photo', methods=['GET'])
+    @app.route('/get_photo', methods=['POST'])
     def get_photo():
         try:
             data = request.json
