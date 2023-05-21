@@ -1,3 +1,4 @@
+import array
 import json
 from datetime import datetime
 import pymongo
@@ -197,6 +198,16 @@ class Mongo:
         if not user:
             return []
         return user["profile_img"][0]
+
+    def get_all_history(self, username: str) -> object:
+        user = self.collection.find_one({"username": username})
+        if not user:
+            return []
+        return user["historyOfFalls"]
+
+    def get_video(self, filename: str) -> bytes:
+        file = self.collection.find_one({'filename': filename})
+        return file["data"]
 
 
 # print(mongo.find_user("omerap12"))
