@@ -30,6 +30,7 @@ jobs:
         FIREBASE_CREDS: ${{ secrets.FIREBASE_CREDS }}
       run: |
         echo $FIREBASE_CREDS > firebase_creds.json
+        cat firebase_creds.json
     - name: Run server
       env:
        MONGO_DB_TOKEN: ${{ secrets.MONGO_DB }} 
