@@ -11,8 +11,12 @@ class Firebase:
             firebase_admin.initialize_app(self.cred)
             self.bucket_name = "elderly-life-savior.appspot.com"
         except ConnectionRefusedError as e:
+            print(e)
             print("No file found")
-    
+        except FileNotFoundError as e:
+            print(e)
+            print("No file found")
+
     def upload_file_to_storage(self, local_file_path:str, destination_blob_name) -> bool:
         try:
             """Uploads a local file to the specified bucket in Firebase Storage."""
