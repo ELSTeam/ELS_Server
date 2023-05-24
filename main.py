@@ -14,15 +14,18 @@ from flask_cors import CORS
 from io import BytesIO
 import base64
 import zlib
+import FirebaseManagment
+import os
 
 if __name__ == "__main__":
     mongo_db = MongoManagment.Mongo()
+    firebase = FirebaseManagment.Firebase()
     app = Flask(__name__)
     CORS(app)
     TIME=10
+
     @app.route('/sign_in', methods=['POST'])
     def sign_in():
-        
         try:
             data = request.json
             username = data["username"]
@@ -146,6 +149,12 @@ if __name__ == "__main__":
             video_file = request.files['file']
             username = video_file.filename.split('#')[1].split('.')[0]
             file_data = {'filename': video_file.filename, 'data': video_file.read()}
+
+            """
+            Upload to firebase
+            """
+            file_upload_firebase(file_data['filename'],file_data['data'])
+            
             # send mail and sms alerts using threading
             mail_sender = EmailSender()
             sms_sender = SMSSender()
@@ -209,7 +218,7 @@ if __name__ == "__main__":
         try:
             data = request.json
             filename = data["filename"]
-            output = mongo_db.get_video(filename)
+            output = firebase.get_file_from_storage(filename)
             if output:
                 return output, 200, {'ContentType': 'application/json'}
             else:
@@ -224,7 +233,9 @@ if __name__ == "__main__":
         try:
             data = request.json
             username = data["username"]
-            output = mongo_db.get_latest_video(username)
+            get_latest_video_name = mongo_db.get_latest_video_name(username)
+            output = firebase.get_file_from_storage(get_latest_video_name)
+            # output = mongo_db.get_latest_video(username)
             if output:
                 return output, 200, {'ContentType': 'application/json'}
             else:
@@ -239,6 +250,7 @@ if __name__ == "__main__":
         try:
             photo_file = request.files['file']
             content = photo_file.read()
+            file_upload_firebase(photo_file.filename,content)
             encoded_content = base64.b64encode(content)
             username = photo_file.filename.split('#')[1].split('.')[0]
             if mongo_db.upload_photo(username, encoded_content):
@@ -249,7 +261,16 @@ if __name__ == "__main__":
             print(e)
             # returns 500 if error is internal
             return json.dumps({'success': False}), 500, {'ContentType': 'application/json'}
-
+    
+    def file_upload_firebase(filename:str, contents:base64) -> bool:
+        with open(filename,'wb') as file:
+            file.write(contents)
+        file.close()
+        if not firebase.upload_file_to_storage(filename,filename):
+            print("Error upload file to firebase")
+        else:
+            print("File upload to firebase ok")
+        os.remove(filename)
 
     @app.route('/get_photo', methods=['POST'])
     def get_photo():
@@ -264,6 +285,5 @@ if __name__ == "__main__":
         except Exception as e:
             print(e)
             return json.dumps({'success': False}), 500, {'ContentType': 'application/json'}
-
-
+        
     app.run(port=5000, debug=True, host='0.0.0.0')

@@ -3,6 +3,7 @@ WORKDIR /app
 ENV KEY=
 COPY main.py .
 COPY MongoManagment.py .
+COPY FirebaseManagment.py .
 COPY requirements.txt .
 COPY email_sender.py .
 COPY sms_sender.py .
