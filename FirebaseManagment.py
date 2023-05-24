@@ -6,9 +6,12 @@ import datetime
 
 class Firebase:
     def __init__(self) -> None:
-        self.cred = credentials.Certificate('firebase_creds.json')
-        firebase_admin.initialize_app(self.cred)
-        self.bucket_name = "elderly-life-savior.appspot.com"
+        try:
+            self.cred = credentials.Certificate('firebase_creds.json')
+            firebase_admin.initialize_app(self.cred)
+            self.bucket_name = "elderly-life-savior.appspot.com"
+        except ConnectionRefusedError as e:
+            print("No file found")
     
     def upload_file_to_storage(self, local_file_path:str, destination_blob_name) -> bool:
         try:
