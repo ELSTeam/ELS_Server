@@ -204,8 +204,13 @@ if __name__ == "__main__":
             data = request.json
             username = data["username"]
             output = mongo_db.get_all_history(username)
+
+            # adding the video url
             if output:
+                for item in output:
+                    item["video_url"] = firebase.get_file_from_storage(item['filename'])
                 return output, 200, {'ContentType': 'application/json'}
+
             else:
                 return json.dumps({'success': False}), 400, {'ContentType': 'application/json'}
         except Exception as e:
