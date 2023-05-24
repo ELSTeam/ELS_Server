@@ -218,7 +218,7 @@ if __name__ == "__main__":
         try:
             data = request.json
             filename = data["filename"]
-            output = mongo_db.get_video(filename)
+            output = firebase.get_file_from_storage(filename)
             if output:
                 return output, 200, {'ContentType': 'application/json'}
             else:
@@ -283,20 +283,5 @@ if __name__ == "__main__":
         except Exception as e:
             print(e)
             return json.dumps({'success': False}), 500, {'ContentType': 'application/json'}
-    
-    # @app.rout('/get_photo_firebase', methods=['POST'])
-    # def get_photo_firebase():
-    #     try:
-    #         data = request.json
-    #         username = data["username"]
-    #         output = mongo_db.get_photo(username)
-    #         if output:
-    #             return output, 200, {'ContentType': 'application/json'}
-    #         else:
-    #             return json.dumps({'success': False}), 400, {'ContentType': 'application/json'}
-    #     except Exception as e:
-    #         print(e)
-    #         return json.dumps({'success': False}), 500, {'ContentType': 'application/json'}
-
-
+        
     app.run(port=5000, debug=True, host='0.0.0.0')
