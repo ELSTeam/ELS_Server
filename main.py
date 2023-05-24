@@ -233,7 +233,9 @@ if __name__ == "__main__":
         try:
             data = request.json
             username = data["username"]
-            output = mongo_db.get_latest_video(username)
+            get_latest_video_name = mongo_db.get_latest_video_name(username)
+            output = firebase.get_file_from_storage(get_latest_video_name)
+            # output = mongo_db.get_latest_video(username)
             if output:
                 return output, 200, {'ContentType': 'application/json'}
             else:

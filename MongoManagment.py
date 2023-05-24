@@ -183,6 +183,13 @@ class Mongo:
         fall_info_from_mongo = user["historyOfFalls"][-1]
         file_data = self.collection.find_one({'filename': fall_info_from_mongo["filename"]})
         return file_data["data"]
+    
+    def get_latest_video_name(self,username:str) -> str:
+        user = self.collection.find_one({"username": username})
+        if not user:
+            return []
+        fall_info_from_mongo = user["historyOfFalls"][-1]
+        return fall_info_from_mongo["filename"]
 
     def upload_photo(self, username: str, encoded_content: bytes) -> bool:
         user = self.collection.find_one({"username": username})
