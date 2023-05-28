@@ -35,7 +35,7 @@ def sign_up(url):
     Function purpose - check if the sign up of function works in server side at /sign_up
     """
 	# user already exist
-	payload = {"username": "omerap12", "password": "password"}
+	payload = {"username": "omerap12", "password": "password", "email": "omerap12@gmail.com", "birthDay": "29/12/1997"}
 	headers = {'Content-Type': 'application/json'}
 	res = requests.post(url, json=payload, headers=headers)
 	assert res.status_code == 400
