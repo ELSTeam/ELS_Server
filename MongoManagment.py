@@ -114,6 +114,13 @@ class Mongo:
                 {"$set": {"birthDay": birthDay}})
         return True
 
+    def get_data_of_user(self, username: str) -> json:
+        user = self.find_user(username)
+        if not user:
+            return []
+        json_output = {"password": user["password"], "birthDay": user["birthDay"], "email": user["email"]}
+        return json.dumps(json_output)
+
     def delete_user(self, username: str, password: str) -> None:
         """
         Function delete user. by checking the password and username

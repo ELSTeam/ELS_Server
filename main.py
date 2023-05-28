@@ -26,6 +26,9 @@ if __name__ == "__main__":
 
     @app.route('/sign_in', methods=['POST'])
     def sign_in():
+        """
+        request for sign-in process - when user enters username and password in the payload.
+        """
         try:
             data = request.json
             username = data["username"]
@@ -43,6 +46,10 @@ if __name__ == "__main__":
 
     @app.route('/sign_up', methods=['POST'])
     def sign_up():
+        """
+        Sign-up new user to the system. In order to sign in the user has to enter - username, password,
+        birthday and his email. Also checks that the requested username is not exists in the system.
+        """
         try:
             data = request.json
             username = data["username"]
@@ -63,6 +70,9 @@ if __name__ == "__main__":
 
     @app.route('/update_user_details', methods=['POST'])
     def update_user_details():
+        """
+        User can update all his password, birthday and email that it entered.
+        """
         try:
             data = request.json
             username = data["username"]
@@ -82,6 +92,9 @@ if __name__ == "__main__":
 
     @app.route('/delete', methods=['DELETE'])
     def delete():
+        """
+        delete user by putting in the payload username and password
+        """
         try:
             data = request.json
             username = data["username"]
@@ -97,6 +110,9 @@ if __name__ == "__main__":
 
     @app.route('/add_contact', methods=['PUT'])
     def add_contact():
+        """
+        User adding a new contact as a contact person for our system. When user is fall, the contact will be notified.
+        """
         try:
             data = request.json
             username = data["username"]
@@ -115,6 +131,9 @@ if __name__ == "__main__":
 
     @app.route('/all_contacts', methods=['GET'])
     def get_all_contacts():
+        """
+        User's input is his username, this returns his all contacts that will be notified when fall is detected.
+        """
         try:
             if request.args:
                 username = request.args.get("username")
@@ -136,6 +155,9 @@ if __name__ == "__main__":
 
     @app.route('/update_contact', methods=['PUT'])
     def update_contact():
+        """
+        User can update his contacts details.
+        """
         try:
             data = request.json
             username = data["username"]
@@ -149,9 +171,29 @@ if __name__ == "__main__":
             print(e)
             return json.dumps({'success': False}), 500, {'ContentType': 'application/json'}
 
+    @app.route('/get_data_of_user', methods=['POST'])
+    def get_data_of_user():
+        """
+        Returns all data about a specific user.
+        """
+        try:
+            data = request.json
+            username = data["username"]
+            output = mongo_db.get_data_of_user(username)
+            if output:
+                return output, 200, {'ContentType': 'application/json'}
+            else:
+                return json.dumps({'success': False}), 400, {'ContentType': 'application/json'}
+        except Exception as e:
+            print(e)
+            return json.dumps({'success': False}), 500, {'ContentType': 'application/json'}
+
 
     @app.route('/delete_contact', methods=['DELETE'])
     def delete_contact():
+        """
+        User can delete his contact by getting username and contact's name.
+        """
         try:
             data = request.json
             username = data["username"]
