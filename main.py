@@ -194,23 +194,6 @@ if __name__ == "__main__":
             # returns 500 if error is internal
             return json.dumps({'success': False}), 500, {'ContentType': 'application/json'}
 
-    @app.route('/get_data_of_user', methods=['POST'])
-    def get_data_of_user():
-        """
-        Returns all data about a specific user.
-        """
-        try:
-            data = request.json
-            username = data["username"]
-            output = mongo_db.get_data_of_user(username)
-            if output:
-                return output, 200, {'ContentType': 'application/json'}
-            else:
-                return json.dumps({'success': False}), 400, {'ContentType': 'application/json'}
-        except Exception as e:
-            print(e)
-            return json.dumps({'success': False}), 500, {'ContentType': 'application/json'}
-
 
     @app.route('/delete_contact', methods=['DELETE'])
     def delete_contact():
