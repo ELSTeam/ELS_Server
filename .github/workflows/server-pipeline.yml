@@ -24,12 +24,12 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install flake8 pytest
-        pip install flask
-        pip install requests
-        pip install pymongo
-        pip install twilio
         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+    - name: Copy local firebase creds
+      env:
+        FIREBASE_CREDS: ${{ secrets.FIREBASE_CREDS }}
+      run: |
+        echo $FIREBASE_CREDS > firebase_creds.json
     - name: Run server
       env:
        MONGO_DB_TOKEN: ${{ secrets.MONGO_DB }} 
@@ -55,6 +55,11 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install flake8 pytest
+    - name: Copy local firebase creds
+      env: 
+        FIREBASE_CREDS: ${{ secrets.FIREBASE_CREDS }}
+      run: |
+        echo $FIREBASE_CREDS > firebase_creds.json
     - name: Create docker image
       run: |
         docker build . -t omerap12/server
@@ -84,9 +89,3 @@ jobs:
         context: .
         push: true
         tags: ${{ steps.meta.outputs.tags }}
-      
-        
-      
-    
-
-  
