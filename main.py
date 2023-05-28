@@ -164,11 +164,14 @@ if __name__ == "__main__":
             contact_name = data["contact_name"]
             contact_info = data["contact_info"]
             if mongo_db.update_contact_details(username, contact_name, contact_info):
+                # returns 200 if updated successfully
                 return json.dumps({'success': True}), 200, {'ContentType': 'application/json'}
             else:
+                # returns 400 if not updated successfully - problem in uploading to database
                 return json.dumps({'success': False}), 400, {'ContentType': 'application/json'}
         except Exception as e:
             print(e)
+            # returns 500 if error is internal
             return json.dumps({'success': False}), 500, {'ContentType': 'application/json'}
 
     @app.route('/get_data_of_user', methods=['POST'])
@@ -181,11 +184,14 @@ if __name__ == "__main__":
             username = data["username"]
             output = mongo_db.get_data_of_user(username)
             if output:
+                # returns 200 if output is not empty and returns the output as json object.
                 return output, 200, {'ContentType': 'application/json'}
             else:
+                # returns 400 if there is problem in pulling the data from database.
                 return json.dumps({'success': False}), 400, {'ContentType': 'application/json'}
         except Exception as e:
             print(e)
+            # returns 500 if error is internal
             return json.dumps({'success': False}), 500, {'ContentType': 'application/json'}
 
 
@@ -204,10 +210,15 @@ if __name__ == "__main__":
                 return json.dumps({'success': False}), 400, {'ContentType': 'application/json'}
         except Exception as e:
             print(e)
+            # returns 500 if error is internal
             return json.dumps({'success': False}), 500, {'ContentType': 'application/json'}
 
     @app.route('/fall_detected', methods=['POST'])
     def fall_detected():
+        """
+        Handles when fall detection is occurred - getting the video from the request from the fall detector,
+        saves the filename
+        """
         try:
             video_file = request.files['file']
             username = video_file.filename.split('#')[1].split('.')[0]
@@ -257,12 +268,19 @@ if __name__ == "__main__":
 
     @app.route('/fall_in_process/<username>', methods=['GET'])
     def fall_in_process(username):
+        """
+        When user falls, this is updates the relevant field in user's document in database
+        """
         mongo_db.update_fall_in_process(username, True)
+        # returns 200 if updated successfully.
         return json.dumps({'success': True}), 200, {'ContentType': 'application/json'}
 
 
     @app.route('/all_history', methods=['POST'])
     def get_all_history():
+        """
+        By username, it returns a list of json objects that represents the history of falls of the user.
+        """
         try:
             data = request.json
             username = data["username"]
@@ -271,16 +289,21 @@ if __name__ == "__main__":
             if output:
                 for item in output:
                     item["video_url"] = firebase.get_file_from_storage(item['filename'])
+                # returns 200 if output is not empty and returns list of json objects
                 return output, 200, {'ContentType': 'application/json'}
             else:
+                # returns 400 if output is empty - no video
                 return json.dumps({'success': False}), 400, {'ContentType': 'application/json'}
         except Exception as e:
             print(e)
+            # returns 500 if error is internal
             return json.dumps({'success': False}), 500, {'ContentType': 'application/json'}
-
 
     @app.route('/get_video', methods=['POST'])
     def get_video():
+        """
+        By input the file name of the fall video, it returns the url for the video to present that in the UI.
+        """
         try:
             data = request.json
             filename = data["filename"]
@@ -291,37 +314,48 @@ if __name__ == "__main__":
                 return json.dumps({'success': False}), 400, {'ContentType': 'application/json'}
         except Exception as e:
             print(e)
+            # returns 500 if error is internal
             return json.dumps({'success': False}), 500, {'ContentType': 'application/json'}
 
     
     @app.route('/get_latest_video', methods=['POST'])
     def get_latest_video():
+        """
+        By getting the username, it returns the video from the last fall that has been detected.
+        """
         try:
             data = request.json
             username = data["username"]
             get_latest_video_name = mongo_db.get_latest_video_name(username)
             output = firebase.get_file_from_storage(get_latest_video_name)
-            # output = mongo_db.get_latest_video(username)
             if output:
+                # returns 200 and the content.
                 return output, 200, {'ContentType': 'application/json'}
             else:
+                # returns 400 if the output is empty - no video at all.
                 return json.dumps({'success': False}), 400, {'ContentType': 'application/json'}
         except Exception as e:
             print(e)
+            # returns 500 if error is internal
             return json.dumps({'success': False}), 500, {'ContentType': 'application/json'}
 
 
     @app.route('/upload_photo', methods=['POST'])
     def upload_photo():
+        """
+        When user inputs a photo to his profile in the UI, this updated the photo in the database.
+        """
         try:
             photo_file = request.files['file']
             content = photo_file.read()
-            file_upload_firebase(photo_file.filename,content)
+            file_upload_firebase(photo_file.filename, content)
             encoded_content = base64.b64encode(content)
             username = photo_file.filename.split('#')[1].split('.')[0]
             if mongo_db.upload_photo(username, encoded_content):
+                # returns 200 if photo uploaded successfully.
                 return json.dumps({'success': True}), 200, {'ContentType': 'application/json'}
             else:
+                # returns 400 if not uploaded.
                 return json.dumps({'success': False}), 400, {'ContentType': 'application/json'}
         except Exception as e:
             print(e)
@@ -341,16 +375,23 @@ if __name__ == "__main__":
 
     @app.route('/get_photo', methods=['POST'])
     def get_photo():
+        """
+        By getting the username, it returns the current photo that in database that is connected to the username.
+        """
         try:
             data = request.json
             username = data["username"]
             output = mongo_db.get_photo(username)
             if output:
+                # returns 200 if output is not empty
                 return output, 200, {'ContentType': 'application/json'}
             else:
+                # returns 400 if user do not have a profile photo - output is empty.
                 return json.dumps({'success': False}), 400, {'ContentType': 'application/json'}
         except Exception as e:
             print(e)
+            # returns 500 if error is internal
             return json.dumps({'success': False}), 500, {'ContentType': 'application/json'}
-        
+
+
     app.run(port=5000, debug=True, host='0.0.0.0')
