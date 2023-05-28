@@ -25,7 +25,7 @@ class Mongo:
             print("Error from Atlas")
             print(e)
             exit(1)
-        print("Connected.")
+        print("Connected...")
 
     def find_user(self, username: str) -> object:
         """
@@ -97,6 +97,14 @@ class Mongo:
         return True
 
     def update_user_details(self, username: str, password: str, email: str, birthDay: str):
+        """
+        Function first check if username exists, if exists it updated the details.
+        :param username: username string of the user
+        :param password: password string of the password
+        :param email: email string of the user's email
+        :param birthDay: birthDay string of the user's birthday.
+        :return: True if updated successfully, or False if user not found.
+        """
         user = self.find_user(username)
         if not user:
             return False
@@ -115,6 +123,10 @@ class Mongo:
         return True
 
     def get_data_of_user(self, username: str) -> json:
+        """
+        Function first check if username exists, and returns the json object of the details.
+        :param username: username string of the user
+        """
         user = self.find_user(username)
         if not user:
             return []
@@ -180,6 +192,12 @@ class Mongo:
         return True
 
     def fall_detected(self, username: str, fall_info: object) -> bool:
+        """
+        Function update the history of falls when fall is detected.
+        :param username: username of the user
+        :param fall_info: contact of the user
+        :return bool: false - if user/contact not exist, true - if succeeded
+        """
         user = self.find_user(username)
         if not user:
             return False
@@ -191,21 +209,27 @@ class Mongo:
 
     def get_fall_in_process(self, username: str) -> bool:
         """
-        check if the flag in the user's document is true or false
+        check if the flag in the user's document is true or false.
+        :param username: username of the user
         """
         user = self.collection.find_one({"username": username})
         return user["fallInProcess"]
 
     def update_fall_in_process(self, username: str, bool_value: bool) -> None:
         """
-        update the flag in the user's document when contact clicks on the link,
-        or
+        update the flag in the user's document when contact clicks on the link.
+        :param username: username of the user
+        :param bool_value: True of False for updating if fall is still not handled.
         """
         self.collection.update_one(
             {"username": username},
             {"$set": {"fallInProcess": bool_value}})
 
-    def get_latest_video(self, username: str):
+    def get_latest_video(self, username: str) -> bytes:
+        """
+        Checks if user is exists and returns his last video of fall to the client.
+        :param username: username of the user
+        """
         user = self.collection.find_one({"username": username})
         if not user:
             return []
@@ -214,6 +238,10 @@ class Mongo:
         return file_data["data"]
     
     def get_latest_video_name(self,username:str) -> str:
+        """
+        Checks if user is exists and returns his video of fall by it's filename.
+        :param username: username of the user
+        """
         user = self.collection.find_one({"username": username})
         if not user:
             return []
@@ -221,6 +249,11 @@ class Mongo:
         return fall_info_from_mongo["filename"]
 
     def upload_photo(self, username: str, encoded_content: bytes) -> bool:
+        """
+        Uploading user's profile photo that it has been uploaded. If exists, it updates it.
+        :param username: username of the user.
+        :param encoded_content: bytes of the user's photo.
+        """
         user = self.collection.find_one({"username": username})
         if not user:
             return []
@@ -230,25 +263,32 @@ class Mongo:
         return True
 
     def get_photo(self, username: str) -> bytes:
+        """
+        Returns the photo of specific user by his username.
+        :param username: username of the user.
+        """
         user = self.collection.find_one({"username": username})
         if not user:
             return []
         return user["profile_img"][0]
 
     def get_all_history(self, username: str) -> object:
+        """
+        Returns list of all user's history of falls by getting his username.
+        :param username: username of the user.
+        """
         user = self.collection.find_one({"username": username})
         if not user:
             return []
         return user["historyOfFalls"]
 
     def get_video(self, filename: str) -> bytes:
+        """
+        Returns the video filename to pull it from firebase.
+        :param filename: the filename of the video of the fall.
+        """
         file = self.collection.find_one({'filename': filename})
         if not file:
             return []
         return file["data"]
 
-
-# print(mongo.find_user("omerap12"))
-# mongo.add_user("test", "testme")
-# print(mongo.check_username_password("omerap12", "Aa123456!"))  # return True
-# print(mongo.check_username_password("omerap12", "false"))  # return False
