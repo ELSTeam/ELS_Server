@@ -10,7 +10,6 @@ import io
 from gridfs import GridFSBucket
 
 
-
 class Mongo:
     def __init__(self):
         print("Connecting to Atlas")
@@ -45,11 +44,13 @@ class Mongo:
         """
         return self.collection.find_one({"username": username, "contacts.name": contact_name})
 
-    def add_user(self, user_name: str, password: str) -> bool:
+    def add_user(self, user_name: str, password: str, email: str, birthDay: str) -> bool:
         """
         Function adds new user, first checking if username already in db, if not it adds him to the db.
         :param user_name: username string of the new user
         :param password: password string of the new user
+        :param email: password string of the new user
+        :param birthDay: password string of the new user
         :return: True if user added else false
         """
         check_for_user = self.find_user(user_name)
@@ -58,9 +59,12 @@ class Mongo:
         userDocument = {
             "username": user_name,
             "password": password,
-            "dateOfBirth": None,
+            "birthDay": birthDay,
+            "email": email,
             "contacts": [],
-            "historyOfFalls": []
+            "historyOfFalls": [],
+            "profile_img": None,
+            "fallInProcess": False
         }
         self.collection.insert_one(userDocument)
         return True
@@ -90,6 +94,24 @@ class Mongo:
         self.collection.update_one(
             {"username": username},
             {"$push": {"contacts": contact_info}}, upsert=True)
+        return True
+
+    def update_user_details(self, username: str, password: str, email: str, birthDay: str):
+        user = self.find_user(username)
+        if not user:
+            return False
+        if user["password"] != password:
+            self.collection.update_one(
+                {"username": username},
+                {"$set": {"password": password}})
+        if user["email"] != email:
+            self.collection.update_one(
+                {"username": username},
+                {"$set": {"email": email}})
+        if user["birthDay"] != birthDay:
+            self.collection.update_one(
+                {"username": username},
+                {"$set": {"birthDay": birthDay}})
         return True
 
     def delete_user(self, username: str, password: str) -> None:
@@ -197,7 +219,7 @@ class Mongo:
             return []
         self.collection.update_one(
             {"username": username},
-            {"$push": {"profile_img": encoded_content}}, upsert=True)
+            {"$set": {"profile_img": encoded_content}}, upsert=True)
         return True
 
     def get_photo(self, username: str) -> bytes:
@@ -214,6 +236,8 @@ class Mongo:
 
     def get_video(self, filename: str) -> bytes:
         file = self.collection.find_one({'filename': filename})
+        if not file:
+            return []
         return file["data"]
 
 

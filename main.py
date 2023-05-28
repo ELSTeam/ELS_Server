@@ -47,7 +47,9 @@ if __name__ == "__main__":
             data = request.json
             username = data["username"]
             password = data["password"]
-            if mongo_db.add_user(username, password):
+            email = data["email"]
+            birthDay = data["birthDay"]
+            if mongo_db.add_user(username, password, email, birthDay):
                 # returns 200 if username is not exists and created successfully new user in DB.
                 return json.dumps({'success': True}), 200, {'ContentType': 'application/json'}
             else:
@@ -58,6 +60,25 @@ if __name__ == "__main__":
             # returns 500 if error is internal
             return json.dumps({'success': False}), 500, {'ContentType': 'application/json'}
 
+
+    @app.route('/update_user_details', methods=['POST'])
+    def update_user_details():
+        try:
+            data = request.json
+            username = data["username"]
+            password = data["password"]
+            email = data["email"]
+            birthDay = data["birthDay"]
+            if mongo_db.update_user_details(username, password, email, birthDay):
+                # returns 200 if username is not exists and created successfully new user in DB.
+                return json.dumps({'success': True}), 200, {'ContentType': 'application/json'}
+            else:
+                # returns 400 if username is already exists
+                return json.dumps({'success': True}), 400, {'ContentType': 'application/json'}
+        except Exception as e:
+            print(e)
+            # returns 500 if error is internal
+            return json.dumps({'success': False}), 500, {'ContentType': 'application/json'}
 
     @app.route('/delete', methods=['DELETE'])
     def delete():
@@ -204,13 +225,11 @@ if __name__ == "__main__":
             data = request.json
             username = data["username"]
             output = mongo_db.get_all_history(username)
-
             # adding the video url
             if output:
                 for item in output:
                     item["video_url"] = firebase.get_file_from_storage(item['filename'])
                 return output, 200, {'ContentType': 'application/json'}
-
             else:
                 return json.dumps({'success': False}), 400, {'ContentType': 'application/json'}
         except Exception as e:
@@ -276,6 +295,7 @@ if __name__ == "__main__":
         else:
             print("File upload to firebase ok")
         os.remove(filename)
+
 
     @app.route('/get_photo', methods=['POST'])
     def get_photo():
