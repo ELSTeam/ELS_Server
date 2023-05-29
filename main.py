@@ -349,9 +349,8 @@ if __name__ == "__main__":
             photo_file = request.files['file']
             content = photo_file.read()
             file_upload_firebase(photo_file.filename, content)
-            encoded_content = base64.b64encode(content)
             username = photo_file.filename.split('#')[1].split('.')[0]
-            if mongo_db.upload_photo(username, encoded_content):
+            if mongo_db.upload_photo(username, photo_file.filename):
                 # returns 200 if photo uploaded successfully.
                 return json.dumps({'success': True}), 200, {'ContentType': 'application/json'}
             else:
@@ -381,7 +380,8 @@ if __name__ == "__main__":
         try:
             data = request.json
             username = data["username"]
-            output = mongo_db.get_photo(username)
+            filename = mongo_db.get_photo(username)
+            output = firebase.get_file_from_storage(filename)
             if output:
                 # returns 200 if output is not empty
                 return output, 200, {'ContentType': 'application/json'}

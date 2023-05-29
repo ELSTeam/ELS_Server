@@ -8,6 +8,8 @@ import gridfs
 import base64
 import io
 from gridfs import GridFSBucket
+from bson.binary import Binary
+
 
 
 class Mongo:
@@ -248,21 +250,21 @@ class Mongo:
         fall_info_from_mongo = user["historyOfFalls"][-1]
         return fall_info_from_mongo["filename"]
 
-    def upload_photo(self, username: str, encoded_content: bytes) -> bool:
+    def upload_photo(self, username: str, file_name: str) -> bool:
         """
         Uploading user's profile photo that it has been uploaded. If exists, it updates it.
         :param username: username of the user.
-        :param encoded_content: bytes of the user's photo.
+        :param file_name: filename of the user's photo.
         """
         user = self.collection.find_one({"username": username})
         if not user:
             return []
         self.collection.update_one(
             {"username": username},
-            {"$set": {"profile_img": encoded_content}}, upsert=True)
+            {"$set": {"profile_img": file_name}}, upsert=True)
         return True
 
-    def get_photo(self, username: str) -> bytes:
+    def get_photo(self, username: str) -> str:
         """
         Returns the photo of specific user by his username.
         :param username: username of the user.
@@ -270,7 +272,7 @@ class Mongo:
         user = self.collection.find_one({"username": username})
         if not user:
             return []
-        return user["profile_img"][0]
+        return user["profile_img"]
 
     def get_all_history(self, username: str) -> object:
         """
