@@ -227,14 +227,14 @@ if __name__ == "__main__":
             """
             Upload to firebase
             """
-            file_upload_firebase(file_data['filename'],file_data['data'])
+            file_upload_firebase(file_data['filename'], file_data['data'])
             
             # send mail and sms alerts using threading
             mail_sender = EmailSender()
             sms_sender = SMSSender()
             contacts_list = mongo_db.get_all_contacts(username)
             threading.Thread(target=send_alerts, args=(username, contacts_list, sms_sender, mail_sender)).start()
-            if mongo_db.fall_detected(username, file_data):
+            if mongo_db.fall_detected(username, video_file.filename):
                 return json.dumps({'success': True}), 200, {'ContentType': 'application/json'}
             else:
                 return json.dumps({'success': False}), 400, {'ContentType': 'application/json'}
@@ -293,7 +293,7 @@ if __name__ == "__main__":
                 return output, 200, {'ContentType': 'application/json'}
             else:
                 # returns 400 if output is empty - no video
-                return json.dumps({'success': False}), 400, {'ContentType': 'application/json'}
+                return [], 400, {'ContentType': 'application/json'}
         except Exception as e:
             print(e)
             # returns 500 if error is internal

@@ -193,20 +193,26 @@ class Mongo:
             {"$pull": {"contacts": {"name": contact_name}}})
         return True
 
-    def fall_detected(self, username: str, fall_info: object) -> bool:
+    def fall_detected(self, username: str, filename: str) -> bool:
         """
         Function update the history of falls when fall is detected.
-        :param username: username of the user
-        :param fall_info: contact of the user
+        :param username: username of the user.
+        :param filename: filename of the video file.
         :return bool: false - if user/contact not exist, true - if succeeded
         """
         user = self.find_user(username)
         if not user:
             return False
-        self.collection.insert_one(fall_info)
         self.collection.update_one(
             {"username": username},
-            {"$push": {"historyOfFalls": {"filename": fall_info["filename"], "date": datetime.now().strftime("%d/%m/%Y %H:%M:%S")}}}, upsert=True)
+            {
+                "$addToSet": {
+                    "historyOfFalls": {
+                        "filename": filename,
+                        "date": datetime.now().strftime("%d/%m/%Y %H:%M:%S")
+                    }
+                }
+            }, upsert=True)
         return True
 
     def get_fall_in_process(self, username: str) -> bool:
